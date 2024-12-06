@@ -12,6 +12,9 @@ import queue
 import json
 from pathlib import Path
 from datetime import datetime
+from datetime import datetime
+import asyncio
+from pathlib import Path
 
 # Core Enums and Data Classes
 class SecurityLevel(Enum):
@@ -35,15 +38,80 @@ class SystemState:
     active_processes: List[str]
     security_status: Dict[str, bool]
     network_status: Dict[str, Any]
+class AIAnalyzer:
+    def __init__(self):
+        self.llm_client = None  # OpenAI/Claude API client
+        self.command_templates = {
+            'tcpdump': {
+                'basic': 'tcpdump -i any -n',
+                'detailed': 'tcpdump -i any -n -vv',
+                'exploit_scan': 'tcpdump -i any -n "tcp[tcpflags] & (tcp-syn) != 0"'
+            }
+        }
+
+    async def analyze_console_output(self, output: str) -> Dict:
+        """Parse console output using LLM for human-friendly insights"""
+        prompt = f"""Analyze this console output for security concerns:
+                    {output}
+                    Format response as JSON with:
+                    - severity level
+                    - identified issues
+                    - recommended actions"""
+        return await self._query_llm(prompt)
+
+    async def generate_tcpdump_command(self, user_request: str) -> str:
+        """Convert natural language to tcpdump command"""
+        prompt = f"""Convert this request to a tcpdump command:
+                    {user_request}
+                    Use appropriate flags and filters."""
+        return await self._query_llm(prompt)
+
+class SecurityToolManager:
+    def __init__(self):
+        self.tools = {
+            'lynis': LynisRunner(),
+            'rkhunter': RKHunterRunner(),
+            'bluetooth': BluetoothAuditor(),
+            'virustotal': VirusTotalClient(),
+            'otx': OTXClient()
+        }
+        
+    async def run_security_audit(self, tools: List[str] = None) -> Dict:
+        """Run specified or all security tools"""
+        results = {}
+        for tool in (tools or self.tools.keys()):
+            results[tool] = await self.tools[tool].run()
+        return results
+
+class FileSystemGuard:
+    def __init__(self):
+        self.watchdog = None
+        self.ai_analyzer = AIAnalyzer()
+        self.threat_patterns = {}  # Will be populated later
+        
+    async def start_monitoring(self):
+        """Start real-time filesystem monitoring"""
+        paths_to_watch = [
+            '/usr/local/bin',
+            '/etc',
+            '/Library',
+        ]
+        
+        for path in paths_to_watch:
+            self._setup_watchdog(path)
 
 class DōmAICore:
     """Primary system controller"""
     def __init__(self):
-        # Core Systems
+        # Keep your existing core systems
         self.system_monitor = SystemMonitor()
         self.security_manager = SecurityManager()
         self.user_manager = UserManager()
         self.interface = AdaptiveInterface()
+
+        self.ai_analyzer = AIAnalyzer()
+        self.security_tools = SecurityToolManager()
+        self.fs_guard = FileSystemGuard()
         
         # Feature Systems (Placeholders)
         self.packet_analyzer = None
