@@ -1,0 +1,98 @@
+<template id="scan-plan">
+    <div class="bg-white rounded-lg shadow p-4 my-4">
+        <div class="text-lg font-medium mb-4">
+            Suggested Security Scans:
+        </div>
+        
+        <div class="space-y-3">
+            <!-- Each scan with friendly name and technical details on hover -->
+            <div class="scan-item group relative p-2 hover:bg-gray-50 rounded-md cursor-help">
+                <div class="flex items-center">
+                    <input type="checkbox" checked class="h-4 w-4 text-indigo-600 rounded border-gray-300">
+                    <span class="ml-3">Check for hidden listening ports</span>
+                </div>
+                <!-- Technical tooltip -->
+                <div class="opacity-0 group-hover:opacity-100 transition-opacity absolute left-0 -bottom-1 transform translate-y-full bg-gray-800 text-white text-sm rounded px-2 py-1 w-max">
+                    <code>lsof -i -n -P | grep LISTEN</code>
+                </div>
+            </div>
+
+            <div class="scan-item group relative p-2 hover:bg-gray-50 rounded-md cursor-help">
+                <div class="flex items-center">
+                    <input type="checkbox" checked class="h-4 w-4 text-indigo-600 rounded border-gray-300">
+                    <span class="ml-3">Monitor suspicious network activity</span>
+                </div>
+                <div class="opacity-0 group-hover:opacity-100 transition-opacity absolute left-0 -bottom-1 transform translate-y-full bg-gray-800 text-white text-sm rounded px-2 py-1 w-max">
+                    <code>tcpdump -i any -n</code>
+                </div>
+            </div>
+
+            <div class="scan-item group relative p-2 hover:bg-gray-50 rounded-md cursor-help">
+                <div class="flex items-center">
+                    <input type="checkbox" checked class="h-4 w-4 text-indigo-600 rounded border-gray-300">
+                    <span class="ml-3">Check active connections</span>
+                </div>
+                <div class="opacity-0 group-hover:opacity-100 transition-opacity absolute left-0 -bottom-1 transform translate-y-full bg-gray-800 text-white text-sm rounded px-2 py-1 w-max">
+                    <code>netstat -tunapl</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Countdown and Control -->
+        <div class="mt-6 flex items-center justify-between">
+            <div class="text-sm text-gray-500">
+                Scans begin in <span id="countdown" class="font-medium">5</span> seconds
+            </div>
+            <button type="button" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Modify Plan
+            </button>
+        </div>
+    </div>
+</template>
+
+<!-- Custom scan addition modal template -->
+<template id="add-scan-modal">
+    <div class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+            <div class="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                <div>
+                    <div class="mt-3 text-center sm:mt-5">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            Add Security Scan
+                        </h3>
+                        <div class="mt-4">
+                            <!-- Scan Types -->
+                            <div class="space-y-4">
+                                <div class="group relative rounded-lg border border-gray-300 p-4 hover:border-indigo-500 cursor-pointer">
+                                    <h4 class="font-medium">Network Traffic Analysis</h4>
+                                    <p class="text-sm text-gray-500">Monitor network traffic for suspicious patterns</p>
+                                    <div class="opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-2 text-xs text-gray-400">
+                                        tcpdump
+                                    </div>
+                                </div>
+
+                                <div class="group relative rounded-lg border border-gray-300 p-4 hover:border-indigo-500 cursor-pointer">
+                                    <h4 class="font-medium">Process Connections</h4>
+                                    <p class="text-sm text-gray-500">Check which processes are making network connections</p>
+                                    <div class="opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-2 text-xs text-gray-400">
+                                        lsof
+                                    </div>
+                                </div>
+
+                                <div class="group relative rounded-lg border border-gray-300 p-4 hover:border-indigo-500 cursor-pointer">
+                                    <h4 class="font-medium">Port Scan Detection</h4>
+                                    <p class="text-sm text-gray-500">Monitor for potential port scanning attempts</p>
+                                    <div class="opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-2 text-xs text-gray-400">
+                                        tcpdump + custom filters
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
