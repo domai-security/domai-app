@@ -39,6 +39,8 @@
    - Different learning curves
    - No unified data view
    - CLI power hidden behind complexity
+   - Time wasted on learning curve
+   - Copying and Pasting between tools
 
 ### What CLI Can Actually Do
 - Network monitoring (tcpdump, lsof, netstat)
@@ -52,13 +54,11 @@
 ## DōmAI Solution
 
 ### Core Philosophy
-- "One dome to protect them all"
+- "One dome to protect it all. One AI to find them. One alliance to bring them and in quarantine, bind them."
 - Unified interface for all security/maintenance tasks
 - Progressive learning through use
 - Power of CLI with accessibility of GUI
 - Adaptive to user skill level
-
-[Previous content about project structure, features, etc. continues...]
 
 ## Real Talk Section - Extended
 
