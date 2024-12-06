@@ -41,6 +41,25 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
+@dataclass
+class SecurityEvent:
+    event_id: str
+    timestamp: datetime.datetime
+    source: str
+    event_type: str
+    severity: str
+    raw_data: str
+    context: Dict[str, Any]
+
+@dataclass
+class AnalysisResult:
+    event: SecurityEvent
+    explanation: str
+    technical_details: Dict[str, Any]
+    user_recommendations: List[str]
+    learning_opportunities: List[str]
+    threat_level: str
+
 class SecurityLevel(Enum):
     BASIC = auto()
     STANDARD = auto()
@@ -74,6 +93,8 @@ class ProtectionDome:
         }
         self.monitoring_active = False
         self.threat_detection = False
+        self.event_queue = queue.Queue()
+        self.event_handlers: Dict[str, List[Callable]] = {}
         
     def activate_shield(self, shield_type: str):
         if shield_type in self.shields:
@@ -83,8 +104,19 @@ class ProtectionDome:
         if shield_type in self.shields:
             self.shields[shield_type] = False
 
+    def register_event_handler(self, event_type: str, handler: Callable):
+        if event_type not in self.event_handlers:
+            self.event_handlers[event_type] = []
+        self.event_handlers[event_type].append(handler)
+
+    def process_security_event(self, event: SecurityEvent):
+        self.event_queue.put(event)
+        if event.event_type in self.event_handlers:
+            for handler in self.event_handlers[event.event_type]:
+                handler(event)
+
 class AIGuardian:
-    """Intelligent threat detection and response"""
+    """Intelligent threat detection and response with LLM integration"""
     def __init__(self):
         self.active = False
         self.learning_mode = True
@@ -92,273 +124,91 @@ class AIGuardian:
         self.response_patterns = {}
         self.behavioral_analysis = {}
         self.anomaly_detection = True
+        self.context_window: deque = deque(maxlen=100)
+        self.analysis_cache: Dict[str, AnalysisResult] = {}
+        self.thread_pool = ThreadPoolExecutor(max_workers=4)
 
-class UserPartnership:
-    """User interaction and preference management"""
-    def __init__(self):
-        self.communication_level = 'intermediate'
-        self.preferences = {}
-        self.interaction_log = []
-    
-    def get_communication_level(self):
-        return self.communication_level
+    async def analyze_security_event(self, event: SecurityEvent) -> AnalysisResult:
+        """Analyze security event using LLM and context"""
+        # Add to context window for future reference
+        self.context_window.append(event)
 
-class AdaptiveInterface:
-    """Adaptive security interface with gamification"""
-    def __init__(self):
-        self.proficiency_levels = {
-            'novice': {
-                'name': "Friendly Guide",
-                'points_needed': 0,
-                'features': ['basic_protection', 'auto_updates'],
-                'achievements': [],
-                'emoji': "🤗"
-            },
-            'apprentice': {
-                'name': "Security Partner",
-                'points_needed': 100,
-                'features': ['threat_detection', 'custom_rules'],
-                'achievements': ['first_threat_blocked', 'week_secure'],
-                'emoji': "🤝"
-            },
-            'guardian': {
-                'name': "Security Expert",
-                'points_needed': 500,
-                'features': ['advanced_monitoring', 'behavior_analysis'],
-                'achievements': ['master_defender', 'threat_hunter'],
-                'emoji': "🔒"
-            },
-            'sentinel': {
-                'name': "Security Architect",
-                'points_needed': 1000,
-                'features': ['kernel_monitoring', 'custom_signatures'],
-                'achievements': ['security_sage', 'fortress_builder'],
-                'emoji': "🏰"
-            }
-        }
-        
-        self.user_points = 0
-        self.current_level = 'novice'
-        self.achievements = []
+        # Check cache first
+        cache_key = self._generate_cache_key(event)
+        if cache_key in self.analysis_cache:
+            return self.analysis_cache[cache_key]
 
-class SecurityPlayground:
-    """Sandbox environment for security learning and testing"""
-    def __init__(self):
-        self.environments = {
-            'basic': {
-                'name': "Training Grounds",
-                'description': "Safe environment for learning basics",
-                'features': [],  # Placeholder for basic security features
-                'challenges': [] # Placeholder for beginner challenges
-            },
-            'advanced': {
-                'name': "Security Arena",
-                'description': "Complex environment for advanced testing",
-                'features': [],  # Placeholder for advanced features
-                'challenges': [] # Placeholder for advanced challenges
-            }
-        }
-        
-        self.sandbox_config = {
-            'isolation_level': 'strict',
-            'monitoring': True,
-            'custom_scenarios': [],
-            'available_tools': []
-        }
-
-class SecurityChallenges:
-    """Flexible challenge system - can be time-zone independent"""
-    def __init__(self):
-        self.challenge_types = {
-            'always_available': {
-                'description': "Practice anytime challenges",
-                'difficulty_levels': ['beginner', 'intermediate', 'advanced'],
-                'rewards': {}
-            },
-            'special_events': {
-                'description': "Optional special challenge events",
-                'frequency': 'flexible',
-                'timezone_options': [],
-                'duration': 'variable'
-            }
-        }
-        
-        self.challenge_content = {
-            'scenarios': [],
-            'pentesting': [],
-            'defense': [],
-            'analysis': []
-        }
-
-class PacketAnalysis:
-    """GUI interface for packet analysis and filtering"""
-    def __init__(self):
-        self.filters = {
-            'basic': [],    # Simple packet filters
-            'advanced': [], # Advanced filtering rules
-            'custom': []    # User-defined filters
-        }
-        
-        self.analysis_tools = {
-            'tcpdump': {
-                'enabled': False,
-                'interface': None,
-                'filters': []
-            },
-            'wireshark': {
-                'enabled': False,
-                'interface': None,
-                'filters': []
-            }
-        }
-
-class AIInstallationGuide:
-    """Interactive AI installation and setup guide"""
-    def __init__(self):
-        self.conversation_mode = 'text'  # or 'voice'
-        self.visualization = '3d'        # or 'simple'
-        self.user_profile = {}
-        self.security_recommendations = []
-        self.compatibility_checks = []
-        
-    def start_conversation(self):
-        """Begin interactive setup process"""
-        pass  # Placeholder for conversation logic
-        
-    def analyze_requirements(self):
-        """Analyze system and user requirements"""
-        pass  # Placeholder for analysis logic
-
-class CISBenchmarkIntegration:
-    """Integration with CIS Security Benchmarks"""
-    def __init__(self):
-        self.benchmark_categories = {
-            'system': {
-                'checks': [],
-                'remediations': [],
-                'monitoring': []
-            },
-            'network': {
-                'checks': [],
-                'remediations': [],
-                'monitoring': []
-            },
-            'application': {
-                'checks': [],
-                'remediations': [],
-                'monitoring': []
-            }
-        }
-        
-        self.implementation_status = {
-            'required': [],
-            'recommended': [],
-            'optional': []
-        }
-
-class ResourceManager:
-    """Intelligent resource management and optimization"""
-    def __init__(self):
-        self.system_profile = self._detect_system_profile()
-        self.resource_modes = {
-            'light': {
-                'description': "Minimal resource usage, essential protection",
-                'max_cpu': 5,
-                'max_memory': 256,
-                'features_enabled': ['core_protection', 'basic_monitoring']
-            },
-            'balanced': {
-                'description': "Optimal balance of protection and performance",
-                'max_cpu': 15,
-                'max_memory': 512,
-                'features_enabled': ['core_protection', 'advanced_monitoring', 
-                                   'threat_detection']
-            },
-            'performance': {
-                'description': "Full protection for powerful systems",
-                'max_cpu': 30,
-                'max_memory': 2048,
-                'features_enabled': ['all']
-            }
-        }
-
-    def _detect_system_profile(self) -> dict:
-        """Detect system capabilities"""
-        profile = {
-            'processor': self._get_processor_info(),
-            'memory': psutil.virtual_memory().total / (1024 * 1024 * 1024),
-            'cores': psutil.cpu_count(),
-            'architecture': platform.machine()
-        }
-        
-        if profile['architecture'] == 'arm64':
-            profile['chip_family'] = self._detect_apple_silicon()
-        
-        return profile
-
-    def _get_processor_info(self) -> dict:
-        """Get detailed processor information"""
-        return {
-            'brand': platform.processor(),
-            'architecture': platform.machine(),
-            'features': self._get_cpu_features()
-        }
-
-    def _get_cpu_features(self) -> List[str]:
-        """Get CPU feature flags"""
-        # Placeholder for CPU feature detection
-        return []
-
-    def _detect_apple_silicon(self) -> str:
-        """Detect Apple Silicon chip family"""
-        # Placeholder for Apple Silicon detection
-        return "M1"  # Default to M1 for now
-
-class DōmAICore:
-    """Core system controller"""
-    def __init__(self):
-        self.protection_dome = ProtectionDome()
-        self.ai_guardian = AIGuardian()
-        self.user_partnership = UserPartnership()
-        self.adaptive_interface = AdaptiveInterface()
-        self.security_playground = SecurityPlayground()
-        self.packet_analysis = PacketAnalysis()
-        self.installation_guide = AIInstallationGuide()
-        self.cis_integration = CISBenchmarkIntegration()
-        self.resource_manager = ResourceManager()
-
-    def initialize(self):
-        """Initialize the security system"""
         try:
-            # Start core systems
-            self.protection_dome.active = True
-            self.ai_guardian.active = True
+            # Prepare context for LLM
+            context = self._prepare_analysis_context(event)
             
-            # Begin user interaction
-            self.installation_guide.start_conversation()
+            # Get LLM analysis
+            analysis = await self._get_llm_analysis(event, context)
             
-            # Initialize security features
-            self._initialize_security_features()
+            # Cache the result
+            self.analysis_cache[cache_key] = analysis
             
-            return True
+            # Update behavioral analysis
+            self._update_behavioral_analysis(event, analysis)
+            
+            return analysis
+            
         except Exception as e:
-            logging.error(f"Initialization failed: {str(e)}")
-            return False
+            logging.error(f"Analysis failed: {str(e)}")
+            return self._get_fallback_analysis(event)
 
-    def _initialize_security_features(self):
-        """Initialize core security features"""
-        # Placeholder for security initialization
+    def _prepare_analysis_context(self, event: SecurityEvent) -> Dict[str, Any]:
+        """Prepare rich context for LLM analysis"""
+        return {
+            'recent_events': list(self.context_window),
+            'known_threats': self.threat_database,
+            'behavioral_patterns': self.behavioral_analysis,
+            'event_correlations': self._find_correlations(event)
+        }
+
+    async def _get_llm_analysis(self, event: SecurityEvent, context: Dict[str, Any]) -> AnalysisResult:
+        """Get LLM-based analysis of security event"""
+        # TODO: Implement actual LLM call
         pass
 
-def main():
-    """Main entry point for DōmAI"""
-    try:
-        print("\n🏰 Initializing DōmAI Security Alliance...")
-        core = DōmAICore()
-        core.initialize()
-    except Exception as e:
-        print(f"\n⚠️  Error: {str(e)}")
-        sys.exit(1)
+    def _update_behavioral_analysis(self, event: SecurityEvent, analysis: AnalysisResult):
+        """Update behavioral analysis based on new events"""
+        event_type = event.event_type
+        if event_type not in self.behavioral_analysis:
+            self.behavioral_analysis[event_type] = {
+                'frequency': 0,
+                'patterns': [],
+                'correlations': set()
+            }
+        
+        self.behavioral_analysis[event_type]['frequency'] += 1
+        # Add pattern analysis here
 
-if __name__ == "__main__":
-    main()
+    def _find_correlations(self, event: SecurityEvent) -> List[SecurityEvent]:
+        """Find correlated events in context window"""
+        return [e for e in self.context_window 
+                if self._events_correlated(event, e)]
+
+    def _events_correlated(self, event1: SecurityEvent, event2: SecurityEvent) -> bool:
+        """Determine if two events are correlated"""
+        # TODO: Implement correlation logic
+        return False
+
+    def _generate_cache_key(self, event: SecurityEvent) -> str:
+        """Generate cache key for event analysis"""
+        return hashlib.sha256(
+            f"{event.event_id}{event.timestamp}{event.raw_data}".encode()
+        ).hexdigest()
+
+    def _get_fallback_analysis(self, event: SecurityEvent) -> AnalysisResult:
+        """Provide fallback analysis when LLM fails"""
+        return AnalysisResult(
+            event=event,
+            explanation="Basic analysis (LLM unavailable)",
+            technical_details={},
+            user_recommendations=["Monitor system for further events"],
+            learning_opportunities=["Security analysis temporarily limited"],
+            threat_level="UNKNOWN"
+        )
+
+[... rest of the existing code ...]
