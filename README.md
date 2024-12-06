@@ -430,15 +430,15 @@ Remember: We're not building castles in the air - we're building a security dome
 
 # DōmAI Security Alliance - Elevator Pitch 🏰
 
-"Imagine if all your Mac security tools worked together perfectly, taught you as they protected you, and grew with your expertise. That's DōmAI.
+"Imagine if all your Mac security tools worked together perfectly, taught you as they protected you, and grew together with your expertise. That's DōmAI.
 
 We've unified fragmented security tools into one intelligent system that adapts to your skill level - from beginner to security expert. It's like having a security mentor, guardian, and command center all in one.
 
-Want to check network traffic? No more jumping between tcpdump and VirusTotal. Need to verify system security? No more running five different tools. DōmAI handles it all, explaining what it's doing and why, in language that matches your expertise.
+Want to check network traffic? No more jumping between tcpdump and VirusTotal. Need to verify system security? No more running five different tools to get a half-global view. DōmAI handles it all, explaining what it's doing and why, in language that matches your expertise. And for those times when you just _feel_ like something is off with your system, but you don't know where to look? DōmAI is there, listening to your natural language input in realtime, and guiding you.
 
-It's not just another security tool - it's your security alliance. Whether you're checking IP reputations, monitoring system changes, or managing permissions, DōmAI makes it simple, educational, and dare we say... fun.
+It's not just another security tool - it's your security alliance. Whether you're checking IP reputations, monitoring filesystem changes, or managing permissions or certificates, DōmAI makes it simple, educational, and... well, no not fun... but... not horrifyingly tedius?
 
-The best part? It grows with you. Start with the basics, unlock features as you learn, and before you know it, you're a security expert with full command of your system.
+The best part? It grows with you. Start by setting your knowledge level and as you gain cybersecurity know-how, more features unlock and before you know it, you're a security expert with pentesting power.
 
 DōmAI: Where protection meets intelligence."
 
@@ -446,3 +446,5 @@ DōmAI: Where protection meets intelligence."
 - "Your Intelligent Security Alliance"
 - "Security That Grows With You"
 - "Protection Through Partnership"
+- 人間とAIの同盟
+
