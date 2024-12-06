@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DōmAI Security Alliance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white shadow">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-900">🏰 DōmAI</h1>
+                <div class="flex items-center space-x-4">
+                    <button id="settingsBtn" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex flex-col h-full space-y-6">
+                <!-- Natural Language Input -->
+                <div class="bg-white shadow sm:rounded-lg p-4">
+                    <form id="queryForm" class="flex space-x-4">
+                        <input type="text" id="queryInput"
+                               class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                               placeholder="Ask me about your network security...">
+                        <button type="submit"
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Ask
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Packet Display -->
+                <div class="bg-white shadow sm:rounded-lg overflow-hidden flex-1">
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8 px-4" aria-label="Tabs">
+                            <button class="explanation-tab selected border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+                                    data-level="novice">Friendly Guide</button>
+                            <button class="explanation-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+                                    data-level="apprentice">Security Partner</button>
+                            <button class="explanation-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+                                    data-level="guardian">Security Expert</button>
+                            <button class="explanation-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+                                    data-level="raw">Raw Output</button>
+                        </nav>
+                    </div>
+                    <div id="packetDisplay" class="h-96 overflow-y-auto p-4 space-y-2">
+                        <!-- Packets will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const socket = io();
+        let currentLevel = 'novice';
+
+        // Handle packet data from server
+        socket.on('packet_data', function(data) {
+            const packetDiv = document.createElement('div');
+            packetDiv.className = 'packet-entry p-2 border rounded';
+            
+            // Store all explanation levels in data attributes
+            packetDiv.dataset.novice = data.novice_explanation;
+            packetDiv.dataset.apprentice = data.apprentice_explanation;
+            packetDiv.dataset.guardian = data.guardian_explanation;
+            packetDiv.dataset.raw = data.raw;
+            
+            // Show current level's explanation
+            packetDiv.textContent = data[currentLevel + '_explanation'] || data.raw;
+            
+            const display = document.getElementById('packetDisplay');
+            display.insertBefore(packetDiv, display.firstChild);
+            
+            // Keep only latest 1000 packets
+            if (display.children.length > 1000) {
+                display.removeChild(display.lastChild);
+            }
+        });
+
+        // Handle explanation level switching
+        document.querySelectorAll('.explanation-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Update tabs
+                document.querySelectorAll('.explanation-tab').forEach(t => {
+                    t.classList.remove('border-indigo-500', 'text-indigo-600');
+                    t.classList.add('border-transparent', 'text-gray-500');
+                });
+                tab.classList.remove('border-transparent', 'text-gray-500');
+                tab.classList.add('border-indigo-500', 'text-indigo-600');
+                
+                // Update displayed explanations
+                currentLevel = tab.dataset.level;
+                document.querySelectorAll('.packet-entry').forEach(packet => {
+                    packet.textContent = packet.dataset[currentLevel];
+                });
+            });
+        });
+
+        // Handle natural language query
+        document.getElementById('queryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('queryInput').value;
+            
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query })
+                });
+                
+                const data = await response.json();
+                
+                // Handle response
+                if (data.action === 'start_capture') {
+                    socket.emit('start_capture', {});
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
