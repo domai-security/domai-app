@@ -1,65 +1,74 @@
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
-from modules.packet_capture.tcpdump_monitor import TcpdumpMonitor, PacketData, ExplanationTier
-from typing import Dict, Any
+from domai_core import DōmAICore, SecurityProficiency, StreamOutput
+import asyncio
 import json
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'dev'
 socketio = SocketIO(app)
 
-# Global monitor instance
-tcpdump_monitor = TcpdumpMonitor()
+# Initialize core system
+core = DōmAICore()
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@socketio.on('start_capture')
-def handle_capture_start(data):
-    """Start packet capture based on user request"""
+@socketio.on('user_query')
+async def handle_query(data):
+    """Handle user's security query"""
+    query = data['query']
     try:
-        tcpdump_monitor.start()
-        # Register callback for packet processing
-        tcpdump_monitor.add_callback('packet', lambda p: emit('packet_data', _format_packet(p)))
+        # Get user's current proficiency
+        proficiency = core.user_partnership.get_communication_level()
+        
+        # Process query through AI Guardian
+        output = await core.ai_guardian.process_user_query(query, proficiency)
+        
+        # Emit separate streams
+        emit('crisis_update', {
+            'content': output.crisis,
+            'timestamp': output.timestamp.isoformat(),
+            'session': output.context_id
+        })
+        
+        emit('knowledge_update', {
+            'content': output.knowledge,
+            'timestamp': output.timestamp.isoformat(),
+            'session': output.context_id
+        })
+        
         return {'status': 'success'}
+        
     except Exception as e:
         return {'status': 'error', 'message': str(e)}
 
-@socketio.on('stop_capture')
-def handle_capture_stop():
-    tcpdump_monitor.stop()
-    return {'status': 'success'}
-
-@app.route('/api/analyze', methods=['POST'])
-def analyze_query():
-    """Handle natural language analysis requests"""
-    query = request.json.get('query')
-    # TODO: Implement LLM query processing
-    # For now, return placeholder response
-    return jsonify({
-        'response': 'I understand you want to check your network traffic. Let me start monitoring...',
-        'command': 'tcpdump -i any -n',
-        'action': 'start_capture'
-    })
-
-def _format_packet(packet: PacketData) -> Dict[str, Any]:
-    """Format packet data for frontend display"""
-    return {
-        'timestamp': packet.timestamp.isoformat(),
-        'raw': packet.raw_output,
-        'novice_explanation': tcpdump_monitor.get_explanation(packet, ExplanationTier.NOVICE),
-        'apprentice_explanation': tcpdump_monitor.get_explanation(packet, ExplanationTier.APPRENTICE),
-        'guardian_explanation': tcpdump_monitor.get_explanation(packet, ExplanationTier.GUARDIAN),
-        'metadata': {
-            'protocol': packet.protocol,
-            'src_ip': packet.src_ip,
-            'dst_ip': packet.dst_ip,
-            'src_port': packet.src_port,
-            'dst_port': packet.dst_port,
-            'length': packet.length
-        }
-    }
+@socketio.on('security_event')
+async def handle_security_event(data):
+    """Handle incoming security events"""
+    try:
+        event = data['event']
+        analysis, stream_output = await core.ai_guardian.analyze_security_event(event)
+        
+        if stream_output:
+            emit('crisis_update', {
+                'content': stream_output.crisis,
+                'timestamp': stream_output.timestamp.isoformat(),
+                'session': stream_output.context_id
+            })
+            
+            emit('knowledge_update', {
+                'content': stream_output.knowledge,
+                'timestamp': stream_output.timestamp.isoformat(),
+                'session': stream_output.context_id
+            })
+        
+        return {'status': 'success'}
+        
+    except Exception as e:
+        return {'status': 'error', 'message': str(e)}
 
 if __name__ == '__main__':
+    # Initialize the core system
+    core.initialize()
     socketio.run(app, debug=True)
