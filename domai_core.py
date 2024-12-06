@@ -9,111 +9,15 @@ Authors: Claude & Joshua
 Where Protection Meets Intelligence
 """
 
-import subprocess
-import logging
-import json
-import os
-import sys
-import datetime
-import hashlib
-import threading
-import queue
-import psutil
-import requests
-import re
-import signal
-import tempfile
-import random
-import stat
-import time
-import uuid
-import socket
-import ssl
-import ctypes
-import platform
-from typing import Dict, List, Any, Tuple, Optional, Set, Callable
-from dataclasses import dataclass
-from enum import Enum, auto
-from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor
-from collections import deque
-from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+[... previous imports ...]
 
 @dataclass
-class SecurityEvent:
-    event_id: str
+class StreamOutput:
+    """Structured output for dual-stream system"""
+    crisis: str  # Immediate security response
+    knowledge: str  # Educational/contextual content
     timestamp: datetime.datetime
-    source: str
-    event_type: str
-    severity: str
-    raw_data: str
-    context: Dict[str, Any]
-
-@dataclass
-class AnalysisResult:
-    event: SecurityEvent
-    explanation: str
-    technical_details: Dict[str, Any]
-    user_recommendations: List[str]
-    learning_opportunities: List[str]
-    threat_level: str
-
-class SecurityLevel(Enum):
-    BASIC = auto()
-    STANDARD = auto()
-    ENHANCED = auto()
-    MAXIMUM = auto()
-
-class SecurityProficiency(Enum):
-    NOVICE = "Friendly Guide"
-    APPRENTICE = "Security Partner"
-    GUARDIAN = "Security Expert"
-    SENTINEL = "Security Architect"
-
-@dataclass
-class Achievement:
-    name: str
-    description: str
-    points: int
-    feature_unlock: Optional[str]
-    icon: str
-
-class ProtectionDome:
-    """Primary protection system"""
-    def __init__(self):
-        self.active = False
-        self.protection_level = SecurityLevel.STANDARD
-        self.shields = {
-            'system': True,
-            'network': True,
-            'files': True,
-            'memory': True
-        }
-        self.monitoring_active = False
-        self.threat_detection = False
-        self.event_queue = queue.Queue()
-        self.event_handlers: Dict[str, List[Callable]] = {}
-        
-    def activate_shield(self, shield_type: str):
-        if shield_type in self.shields:
-            self.shields[shield_type] = True
-            
-    def deactivate_shield(self, shield_type: str):
-        if shield_type in self.shields:
-            self.shields[shield_type] = False
-
-    def register_event_handler(self, event_type: str, handler: Callable):
-        if event_type not in self.event_handlers:
-            self.event_handlers[event_type] = []
-        self.event_handlers[event_type].append(handler)
-
-    def process_security_event(self, event: SecurityEvent):
-        self.event_queue.put(event)
-        if event.event_type in self.event_handlers:
-            for handler in self.event_handlers[event.event_type]:
-                handler(event)
+    context_id: str
 
 class AIGuardian:
     """Intelligent threat detection and response with LLM integration"""
@@ -127,88 +31,101 @@ class AIGuardian:
         self.context_window: deque = deque(maxlen=100)
         self.analysis_cache: Dict[str, AnalysisResult] = {}
         self.thread_pool = ThreadPoolExecutor(max_workers=4)
+        
+        # New attributes for dual-stream system
+        self.current_session_id = None
+        self.crisis_buffer: deque = deque(maxlen=1000)
+        self.knowledge_buffer: deque = deque(maxlen=1000)
 
-    async def analyze_security_event(self, event: SecurityEvent) -> AnalysisResult:
-        """Analyze security event using LLM and context"""
+    async def process_user_query(self, query: str, user_proficiency: SecurityProficiency) -> StreamOutput:
+        """Process user's security query with dual-stream output"""
+        if not self.current_session_id:
+            self.current_session_id = str(uuid.uuid4())
+
+        try:
+            # Analyze query and generate appropriate command/response
+            analysis = await self._analyze_user_query(query, user_proficiency)
+            
+            # Generate dual-stream output
+            crisis_content = await self._generate_crisis_response(analysis)
+            knowledge_content = await self._generate_knowledge_content(analysis)
+            
+            output = StreamOutput(
+                crisis=crisis_content,
+                knowledge=knowledge_content,
+                timestamp=datetime.datetime.now(),
+                context_id=self.current_session_id
+            )
+            
+            # Update buffers
+            self.crisis_buffer.append(output.crisis)
+            self.knowledge_buffer.append(output.knowledge)
+            
+            return output
+            
+        except Exception as e:
+            logging.error(f"Error processing query: {str(e)}")
+            return StreamOutput(
+                crisis="Error processing security query",
+                knowledge="System encountered an error",
+                timestamp=datetime.datetime.now(),
+                context_id=self.current_session_id
+            )
+
+    async def analyze_security_event(self, event: SecurityEvent) -> Tuple[AnalysisResult, StreamOutput]:
+        """Enhanced security event analysis with dual-stream output"""
         # Add to context window for future reference
         self.context_window.append(event)
 
-        # Check cache first
-        cache_key = self._generate_cache_key(event)
-        if cache_key in self.analysis_cache:
-            return self.analysis_cache[cache_key]
-
         try:
-            # Prepare context for LLM
-            context = self._prepare_analysis_context(event)
+            # Get base analysis
+            analysis = await super().analyze_security_event(event)
             
-            # Get LLM analysis
-            analysis = await self._get_llm_analysis(event, context)
+            # Generate stream-specific content
+            stream_output = StreamOutput(
+                crisis=self._format_crisis_analysis(analysis),
+                knowledge=self._format_knowledge_analysis(analysis),
+                timestamp=datetime.datetime.now(),
+                context_id=self.current_session_id
+            )
             
-            # Cache the result
-            self.analysis_cache[cache_key] = analysis
-            
-            # Update behavioral analysis
-            self._update_behavioral_analysis(event, analysis)
-            
-            return analysis
+            return analysis, stream_output
             
         except Exception as e:
             logging.error(f"Analysis failed: {str(e)}")
-            return self._get_fallback_analysis(event)
+            return self._get_fallback_analysis(event), None
 
-    def _prepare_analysis_context(self, event: SecurityEvent) -> Dict[str, Any]:
-        """Prepare rich context for LLM analysis"""
+    async def _analyze_user_query(self, query: str, user_proficiency: SecurityProficiency) -> Dict[str, Any]:
+        """Analyze user query to determine appropriate security response"""
+        # TODO: Implement LLM query analysis
         return {
-            'recent_events': list(self.context_window),
-            'known_threats': self.threat_database,
-            'behavioral_patterns': self.behavioral_analysis,
-            'event_correlations': self._find_correlations(event)
+            'query': query,
+            'interpreted_intent': '',
+            'suggested_commands': [],
+            'security_concerns': [],
+            'educational_opportunities': []
         }
 
-    async def _get_llm_analysis(self, event: SecurityEvent, context: Dict[str, Any]) -> AnalysisResult:
-        """Get LLM-based analysis of security event"""
-        # TODO: Implement actual LLM call
-        pass
+    async def _generate_crisis_response(self, analysis: Dict[str, Any]) -> str:
+        """Generate focused security response"""
+        # TODO: Implement crisis response generation
+        return ""
 
-    def _update_behavioral_analysis(self, event: SecurityEvent, analysis: AnalysisResult):
-        """Update behavioral analysis based on new events"""
-        event_type = event.event_type
-        if event_type not in self.behavioral_analysis:
-            self.behavioral_analysis[event_type] = {
-                'frequency': 0,
-                'patterns': [],
-                'correlations': set()
-            }
-        
-        self.behavioral_analysis[event_type]['frequency'] += 1
-        # Add pattern analysis here
+    async def _generate_knowledge_content(self, analysis: Dict[str, Any]) -> str:
+        """Generate educational/contextual content"""
+        # TODO: Implement knowledge content generation
+        return ""
 
-    def _find_correlations(self, event: SecurityEvent) -> List[SecurityEvent]:
-        """Find correlated events in context window"""
-        return [e for e in self.context_window 
-                if self._events_correlated(event, e)]
+    def _format_crisis_analysis(self, analysis: AnalysisResult) -> str:
+        """Format analysis result for crisis stream"""
+        return f"ALERT: {analysis.threat_level}\n{analysis.explanation}\n" + \
+               f"Recommendations:\n" + \
+               "\n".join(f"- {rec}" for rec in analysis.user_recommendations)
 
-    def _events_correlated(self, event1: SecurityEvent, event2: SecurityEvent) -> bool:
-        """Determine if two events are correlated"""
-        # TODO: Implement correlation logic
-        return False
+    def _format_knowledge_analysis(self, analysis: AnalysisResult) -> str:
+        """Format analysis result for knowledge stream"""
+        return f"Technical Details:\n{json.dumps(analysis.technical_details, indent=2)}\n\n" + \
+               f"Learning Opportunities:\n" + \
+               "\n".join(f"- {opp}" for opp in analysis.learning_opportunities)
 
-    def _generate_cache_key(self, event: SecurityEvent) -> str:
-        """Generate cache key for event analysis"""
-        return hashlib.sha256(
-            f"{event.event_id}{event.timestamp}{event.raw_data}".encode()
-        ).hexdigest()
-
-    def _get_fallback_analysis(self, event: SecurityEvent) -> AnalysisResult:
-        """Provide fallback analysis when LLM fails"""
-        return AnalysisResult(
-            event=event,
-            explanation="Basic analysis (LLM unavailable)",
-            technical_details={},
-            user_recommendations=["Monitor system for further events"],
-            learning_opportunities=["Security analysis temporarily limited"],
-            threat_level="UNKNOWN"
-        )
-
-[... rest of the existing code ...]
+[... rest of the existing code remains unchanged ...]
