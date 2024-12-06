@@ -1,0 +1,25 @@
+domai/
+├── __init__.py
+├── core/
+│   ├── __init__.py
+│   ├── domai_framework.py    # Your existing core framework
+│   └── orchestrator.py       # The SecurityOrchestrator class
+├── ai/
+│   ├── __init__.py
+│   ├── analyzer.py          # AIAnalyzer class
+│   └── prompts/            # AI prompt templates
+├── security/
+│   ├── __init__.py
+│   ├── tool_manager.py     # SecurityToolManager
+│   ├── tools/
+│   │   ├── __init__.py
+│   │   ├── lynis.py
+│   │   ├── rkhunter.py
+│   │   └── bluetooth.py
+│   └── integrations/
+│       ├── __init__.py
+│       ├── virustotal.py
+│       └── otx.py
+└── monitoring/
+    ├── __init__.py
+    └── filesystem.py       # FileSystemGuard
