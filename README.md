@@ -16,13 +16,20 @@
    - Pareto Security: Basic security checks
    - KnockKnock: Launch item checker
    - BlockBlock: Installation monitor
-   - XProtectCheck: Malware definitions
+   - XProCheck: Malware definitions
    - LockRattler: Security system checks
    - Silent Knight: Security update checks
-   - DHS: Hardware diagnostics
+   - DHS: Dylib vulnerabilities/hijack search
    - Signet: Signature verification
    - Taccy: Privacy permission checks
-   - Murus: Firewall management
+   - Murus: Packet firewall management
+   - Apparency: File integrity
+   - Lynis: System security audit
+   - Zap (OWASP ZAP): vulnerabilities in webapps
+   - Wireshark/TCPdump: Packet Sniffing
+   - Rkhunter: Rootkit detector
+   - Little Snitch: Network connections
+   - Virustotal: Check IPs
 
 2. Problems with Current Approach
    - Tools don't communicate with each other
