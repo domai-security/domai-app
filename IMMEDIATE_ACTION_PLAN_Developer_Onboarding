@@ -1,0 +1,115 @@
+IMMEDIATE ACTION PLAN - Developer Onboarding
+Vision Overview for New Developers
+DōmAI is revolutionizing Mac security by solving a critical problem: right now, users need 10-15 different tools for complete system security, each with its own learning curve and interface. Our solution unifies these tools under one "dome" with a unique twist - an AI interface that explains security in plain language while teaching you as you use it.
+The Core Innovation: Dual-Stream Interface
+Imagine you're checking network traffic and see a suspicious connection. Traditional tools show you raw tcpdump output. We show you two things simultaneously:
+
+Crisis Stream (Left Side):
+
+CopySuspicious connection detected:
+IP 192.168.1.100 attempting repeated connections to port 4444
+[Block] [Investigate] [Ignore]
+
+Knowledge Stream (Right Side):
+
+CopyPort 4444 is often used for remote access tools. I'm checking this because:
+- It's an unusual port for normal traffic
+- There are repeated connection attempts
+- This pattern often indicates automated tools
+Key Features for Developers to Understand
+
+Adaptive Learning
+
+
+The system tracks what you understand
+Gradually introduces more technical concepts
+Users "level up" their security knowledge naturally
+Code in: src/core/dual_stream_core.py
+
+
+Tool Integration
+
+
+We wrap existing security tools (tcpdump, lsof, etc.)
+Translate technical output to natural language
+Provide unified interface for all tools
+See: modules/packet_capture/tcpdump_monitor.py
+
+
+LLM Integration
+
+
+Uses AI to explain security concepts
+Translates technical output to natural language
+Adapts explanations to user's level
+Located in: src/llm/ and domai/ai/analyzer.py
+
+What Makes Us Different
+Most security tools say "Here's a suspicious connection" and dump technical data. We say "Here's a suspicious connection, here's why it's suspicious, and here's what you're learning about security by investigating it."
+Architecture Explanation
+
+Core System (src/core/)
+
+
+fortress_nexus.py: Central security coordinator
+dual_stream_core.py: Manages parallel information streams
+stream_manager.py: Handles real-time data flow
+
+
+Tool Integration (modules/)
+
+
+Each security tool gets its own module
+Standard wrapper format for consistency
+Built-in natural language translation
+
+
+Web Interface (webapp/)
+
+
+Split-screen design for dual streams
+Progressive feature revelation
+Real-time security monitoring
+
+Current State
+The foundation is built around unified command handling and dual-stream output. We're currently filling in:
+
+LLM integration for natural language
+Tool wrappers for security utilities
+User progression system
+Permission management
+
+For New Developers
+
+Key Concepts to Understand
+
+
+All security output has two streams (crisis/knowledge)
+Everything teaches while it protects
+User skill level affects all output
+
+
+Code Patterns to Follow
+
+
+Always implement dual-stream output
+Include learning components in all features
+Use type hints and async patterns consistently
+
+
+Areas Needing Help
+
+
+Tool wrapper implementation
+LLM integration
+Permission management
+Testing framework
+
+First Steps for New Devs
+
+Study tcpdump_monitor.py - it's our most complete implementation
+Look at dual_stream_core.py for core architecture
+Review analyzer.py for AI integration patterns
+
+This is more than a security tool - it's a security mentor that grows with the user. Keep that vision in mind as you develop.
+Need more detail on any aspect?
