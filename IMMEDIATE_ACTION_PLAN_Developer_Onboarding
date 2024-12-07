@@ -113,3 +113,87 @@ Review analyzer.py for AI integration patterns
 
 This is more than a security tool - it's a security mentor that grows with the user. Keep that vision in mind as you develop.
 Need more detail on any aspect?
+
+
+
+Questions for New Claude Session
+
+Core Understanding Questions:
+
+Copy- What's the relationship between the crisis and knowledge streams? How do they work together?
+- How does the progressive learning system determine user expertise level?
+- What's the architecture for handling tool integrations? 
+- How are permissions being handled for system-level access?
+- What's the current state of the LLM integration?
+
+Technical State Questions:
+
+Copy- Which files have been successfully implemented vs which are just scaffolding?
+- What's the current state of macOS integration?
+- Are we using external APIs or services?
+- What's the testing strategy and current coverage?
+
+Priority Questions:
+
+Copy- Which features are considered MVP vs future enhancements?
+- What's the immediate focus - security, UX, or infrastructure?
+- Are we prioritizing any specific tool integrations?
+Non-Obvious Vision Elements
+
+The Dual-Stream Philosophy
+
+CopyMost security tools just show technical output. We're doing something fundamentally 
+different: every security event generates two parallel streams:
+
+Crisis Stream: What's happening and what to do
+Knowledge Stream: Why it's happening and what you're learning
+
+This isn't just about showing two pieces of information - it's about 
+simultaneously handling an incident while teaching security principles.
+
+Progressive Revelation
+
+CopyThe system doesn't just have "beginner" and "advanced" modes. It actively 
+tracks what concepts you understand and gradually introduces new ones through 
+real security events. It's more like a mentor than a tool.
+
+Tool Integration Approach
+
+CopyWe're not just wrapping CLI tools with a GUI. Each tool integration needs to:
+- Parse technical output into natural language
+- Identify teaching opportunities
+- Scale complexity based on user level
+- Connect findings with other tools
+
+The "Dome" Concept
+
+CopyThe name DōmAI isn't just a cool combination of words. The "dome" represents 
+a protective shield that:
+- Unifies fragmented tools into one coherent system
+- Provides layered protection that grows with user expertise
+- Creates a safe space for learning about security
+
+Educational Philosophy
+
+CopyThe system follows "learn by doing" but with a twist:
+- Every security check teaches something
+- Users learn during actual security incidents
+- The system identifies teaching moments in real-time
+- Complexity increases naturally through use
+
+AI Implementation Vision
+
+CopyThe AI isn't just for natural language processing. It:
+- Identifies teaching opportunities in security events
+- Tracks user comprehension across security concepts
+- Connects related security findings
+- Adjusts technical depth based on user understanding
+
+Security Stance
+
+CopyThe goal isn't just to protect systems but to:
+- Make security accessible without dumbing it down
+- Build user confidence through understanding
+- Create security experts through daily use
+- Maintain rigor while improving accessibility
+Would you like me to expand on any of these aspects or add additional context?
