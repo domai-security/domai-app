@@ -53,7 +53,7 @@ async def process_query():
 
     except Exception as e:
         logging.error(f"Error processing query: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'An internal error has occurred!'}), 500
 
 @api.route('/execute', methods=['POST'])
 async def start_execution():
