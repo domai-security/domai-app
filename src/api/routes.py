@@ -74,7 +74,7 @@ async def start_execution():
 
     except Exception as e:
         logging.error(f"Error starting execution: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'An internal error has occurred!'}), 500
 
 async def stream_command_output(command_type: str):
     """Stream command output through websockets"""
@@ -95,7 +95,7 @@ async def stream_command_output(command_type: str):
 
     except Exception as e:
         logging.error(f"Error streaming output: {str(e)}")
-        emit('error', {'message': str(e)})
+        emit('error', {'message': 'An internal error has occurred!'})
 
 @api.route('/stop', methods=['POST'])
 def stop_execution():
@@ -109,7 +109,7 @@ def stop_execution():
 
     except Exception as e:
         logging.error(f"Error stopping execution: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'An internal error has occurred!'}), 500
 
 @api.route('/progress', methods=['GET'])
 def get_learning_progress():
@@ -127,4 +127,4 @@ def get_learning_progress():
 
     except Exception as e:
         logging.error(f"Error getting progress: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'An internal error has occurred!'}), 500
